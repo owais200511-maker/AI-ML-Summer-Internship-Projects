@@ -1,0 +1,15 @@
+streamlit
+pandas
+numpy
+plotly
+matplotlib
+scikit-learn
+pillow
+joblib
+langchain
+langchain-openai
+langchain-community
+langchain-text-splitters
+langchain-chroma
+beautifulsoup4
+pysqlite3-binary
