@@ -1,4 +1,5 @@
 streamlit
 numpy
 pillow
-scikit-learn
+deepface
+tf-keras
