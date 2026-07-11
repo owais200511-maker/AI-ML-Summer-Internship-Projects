@@ -83,8 +83,8 @@ if uploaded:
                 # DeepFace returns a list; take the first detected face
                 result = results[0] if isinstance(results, list) else results
                 gender_scores = result["gender"]          # {'Man': %, 'Woman': %}
-                male_pct   = gender_scores.get("Man", 0)
-                female_pct = gender_scores.get("Woman", 0)
+                male_pct   = float(gender_scores.get("Man", 0))
+                female_pct = float(gender_scores.get("Woman", 0))
                 dominant   = result["dominant_gender"]     # 'Man' or 'Woman'
 
                 is_male    = dominant == "Man"
@@ -100,9 +100,9 @@ if uploaded:
 
                 st.markdown("**Confidence Scores**")
                 st.metric("👨 Male Probability", f"{male_pct:.1f}%")
-                st.progress(male_pct / 100)
+                st.progress(min(max(male_pct / 100.0, 0.0), 1.0))
                 st.metric("👩 Female Probability", f"{female_pct:.1f}%")
-                st.progress(female_pct / 100)
+                st.progress(min(max(female_pct / 100.0, 0.0), 1.0))
 
                 st.info(f"**Overall Confidence:** {confidence:.1f}%")
 
