@@ -5,6 +5,8 @@ plotly
 matplotlib
 scikit-learn
 pillow
+deepface
+tf-keras
 joblib
 langchain
 langchain-openai

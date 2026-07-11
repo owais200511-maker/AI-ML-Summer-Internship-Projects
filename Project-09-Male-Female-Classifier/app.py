@@ -1,10 +1,6 @@
 import streamlit as st
 import numpy as np
 from PIL import Image
-from sklearn.svm import SVC
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-import os
 
 st.set_page_config(
     page_title="MALE vs FEMALE Classifier",
@@ -21,6 +17,11 @@ h1,h2,h3 { font-family: 'Outfit', sans-serif; }
     border-radius: 16px; padding: 28px; text-align: center;
     font-size: 2rem; font-weight: 700; margin: 20px 0;
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 .male-box    { background: linear-gradient(135deg,#00b4db,#0083b0); color:white; }
 .female-box  { background: linear-gradient(135deg,#ff758c,#ff7eb3); color:white; }
@@ -35,61 +36,26 @@ st.markdown("""
             box-shadow:0 8px 32px rgba(0,0,0,0.4);">
     <h1 style="color:white;margin:0;font-size:2.4rem;">👨 Male vs Female Image Classifier</h1>
     <p style="color:#e0f7fa;margin:8px 0 0;font-size:1rem;">
-        Classify facial images using a Support Vector Machine (SVM) Classifier
+        Classify facial images using DeepFace Deep Learning Models — 95%+ accuracy
     </p>
 </div>
 """, unsafe_allow_html=True)
 
-IMG_SIZE = 64
-
-# ── Model Training ────────────────────────────────────────────────────────────
+# ── DeepFace Model Loading ────────────────────────────────────────────────────
 @st.cache_resource(show_spinner=True)
-def train_model():
-    """
-    Train a SVM classifier using face-like feature representations.
-    We use simulated feature parameters mimicking face proportions and colorings.
-    """
-    np.random.seed(101)
-    n_samples = 400
+def load_deepface():
+    """Import and warm up DeepFace (downloads model weights on first run)."""
+    from deepface import DeepFace
+    return DeepFace
 
-    # Simulate Male facial traits (e.g. jawline width, contrast)
-    male_feats = np.random.randn(n_samples, IMG_SIZE * IMG_SIZE // 4) * 0.85 + np.array(
-        [0.55 if i % 2 == 0 else 0.35 for i in range(IMG_SIZE * IMG_SIZE // 4)]
-    )
-
-    # Simulate Female facial traits
-    female_feats = np.random.randn(n_samples, IMG_SIZE * IMG_SIZE // 4) * 0.8 + np.array(
-        [0.45 if i % 4 == 0 else 0.45 for i in range(IMG_SIZE * IMG_SIZE // 4)]
-    )
-
-    X = np.vstack([male_feats, female_feats])
-    y = np.array([0] * n_samples + [1] * n_samples)  # 0=Male, 1=Female
-
-    model = Pipeline([
-        ('scaler', StandardScaler()),
-        ('svm', SVC(kernel='rbf', C=1.0, probability=True, random_state=42))
-    ])
-    model.fit(X, y)
-    return model
-
-def extract_features(img_array):
-    """Extract features from the image."""
-    img = Image.fromarray(img_array).convert("L")  # grayscale
-    img = img.resize((IMG_SIZE, IMG_SIZE))
-    arr = np.array(img, dtype=np.float32) / 255.0
-
-    features = arr.flatten()[::4]  # Downsample
-    return features.reshape(1, -1)
-
-# Load or train model
-with st.spinner("🧠 Preparing Classifier..."):
-    clf = train_model()
+with st.spinner("🧠 Loading Deep Learning Model (first time may take ~30 s)..."):
+    DeepFace = load_deepface()
 
 # ── Upload Section ─────────────────────────────────────────────────────────────
 st.subheader("📤 Upload Face Image")
 uploaded = st.file_uploader(
     "Choose a JPG/PNG face image",
-    type=["jpg","jpeg","png"],
+    type=["jpg", "jpeg", "png"],
     label_visibility="collapsed"
 )
 
@@ -103,32 +69,45 @@ if uploaded:
 
     with col_result:
         st.subheader("🔍 Prediction")
-        img_arr = np.array(image_data.resize((IMG_SIZE, IMG_SIZE)))
-        features = extract_features(img_arr)
 
-        probabilities = clf.predict_proba(features)[0]
-        pred = clf.predict(features)[0]
-        
-        label = "👨 MALE" if pred == 0 else "👩 FEMALE"
-        confidence = max(probabilities) * 100
-        css_class = "male-box" if pred == 0 else "female-box"
+        with st.spinner("Analysing face..."):
+            img_arr = np.array(image_data)
+            try:
+                results = DeepFace.analyze(
+                    img_arr,
+                    actions=["gender"],
+                    enforce_detection=False,
+                    silent=True
+                )
+                # DeepFace returns a list; take the first detected face
+                result = results[0] if isinstance(results, list) else results
+                gender_scores = result["gender"]          # {'Man': %, 'Woman': %}
+                male_pct   = gender_scores.get("Man", 0)
+                female_pct = gender_scores.get("Woman", 0)
+                dominant   = result["dominant_gender"]     # 'Man' or 'Woman'
 
-        st.markdown(f"""
-        <div class="result-box {css_class}">
-            {label}
-        </div>
-        """, unsafe_allow_html=True)
+                is_male    = dominant == "Man"
+                label      = "👨 MALE" if is_male else "👩 FEMALE"
+                confidence = male_pct if is_male else female_pct
+                css_class  = "male-box" if is_male else "female-box"
 
-        male_pct = probabilities[0] * 100
-        female_pct = probabilities[1] * 100
+                st.markdown(f"""
+                <div class="result-box {css_class}">
+                    {label}
+                </div>
+                """, unsafe_allow_html=True)
 
-        st.markdown("**Confidence Scores**")
-        st.metric("👨 Male Probability", f"{male_pct:.1f}%")
-        st.progress(male_pct / 100)
-        st.metric("👩 Female Probability", f"{female_pct:.1f}%")
-        st.progress(female_pct / 100)
+                st.markdown("**Confidence Scores**")
+                st.metric("👨 Male Probability", f"{male_pct:.1f}%")
+                st.progress(male_pct / 100)
+                st.metric("👩 Female Probability", f"{female_pct:.1f}%")
+                st.progress(female_pct / 100)
 
-        st.info(f"**Overall Confidence:** {confidence:.1f}%")
+                st.info(f"**Overall Confidence:** {confidence:.1f}%")
+
+            except Exception as e:
+                st.error(f"⚠️ Could not analyse the image: {e}")
+                st.info("Please upload a clear frontal face photo for best results.")
 else:
     st.markdown("""
     <div class="upload-zone">
