@@ -77,6 +77,7 @@ if uploaded:
                     img_arr,
                     actions=["gender"],
                     enforce_detection=False,
+                    detector_backend="skip",
                     silent=True
                 )
                 # DeepFace returns a list; take the first detected face
