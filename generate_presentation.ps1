@@ -1,4 +1,4 @@
-# PowerShell Script to generate a high-fidelity PowerPoint presentation using COM automation
+# PowerShell Script to generate a high-fidelity, highly designed PowerPoint presentation using COM automation
 try {
     $ppt = New-Object -ComObject PowerPoint.Application
 } catch {
@@ -33,6 +33,21 @@ $slide1 = $pres.Slides.Add(1, 12) # ppLayoutBlank = 12
 $slide1.Background.Fill.Solid()
 $slide1.Background.Fill.ForeColor.RGB = $COLOR_BG_TITLE
 
+# Decorative Background Circle 1 (Large, Slate-800)
+$circ1 = $slide1.Shapes.AddShape(9, 700, -80, 400, 400) # msoShapeOval = 9
+$circ1.Fill.Solid()
+$circ1.Fill.ForeColor.RGB = $COLOR_CARD
+$circ1.Line.Visible = 0
+$circ1.ZOrder(1)
+
+# Decorative Background Circle 2 (Medium, Subtle Teal Glow)
+$circ2 = $slide1.Shapes.AddShape(9, 820, 280, 200, 200)
+$circ2.Fill.Solid()
+$circ2.Fill.ForeColor.RGB = $COLOR_TEAL
+$circ2.Fill.Transparency = 0.92  # 92% transparent glow
+$circ2.Line.Visible = 0
+$circ2.ZOrder(1)
+
 # Title Text Box
 $titleBox = $slide1.Shapes.AddTextbox(1, 80, 160, 800, 100) # msoOrientationHorizontal = 1
 $titleRange = $titleBox.TextFrame.TextRange
@@ -56,10 +71,10 @@ $subRange.Font.Name = "Segoe UI"
 $subRange.Font.Size = 18
 $subRange.Font.Color.RGB = $COLOR_TEXT_MUTED
 
-# Author Details
+# Author Details (Updated to Owais Khan)
 $authorBox = $slide1.Shapes.AddTextbox(1, 80, 400, 800, 50)
 $authorRange = $authorBox.TextFrame.TextRange
-$authorRange.Text = "Presented by Danish Khan • Developed in Streamlit & Python"
+$authorRange.Text = "Presented by Owais Khan • Developed in Streamlit & Python"
 $authorRange.Font.Name = "Segoe UI"
 $authorRange.Font.Size = 13
 $authorRange.Font.Bold = $true
@@ -69,6 +84,7 @@ $authorRange.Font.Color.RGB = $COLOR_ORANGE
 $projects = @(
     [PSCustomObject]@{
         Num = "01"
+        Tag = "DATA VISUALIZATION"
         Cat = "DATA ANALYSIS & INTERACTIVE VISUALIZATION"
         Title = "Google Play Store Data Visualization"
         Sub = "Interactive dashboard to explore Android app market trends, user ratings, and installations"
@@ -80,6 +96,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "02"
+        Tag = "DATA CLEANING"
         Cat = "DATA CLEANING & STATISTICAL OUTLIER DETECTION"
         Title = "Airbnb NYC Outliers Percentile Clipping"
         Sub = "Statistical data cleaning dashboard that detects and filters outliers in NYC housing listing prices"
@@ -91,6 +108,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "03"
+        Tag = "COMPUTER VISION"
         Cat = "COMPUTER VISION & CLASSICAL ML CLASSIFICATION"
         Title = "Cat vs Dog Image Classifier"
         Sub = "Computer Vision app classifying uploaded images of cats and dogs using machine learning"
@@ -102,6 +120,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "04"
+        Tag = "HR ANALYTICS"
         Cat = "BUSINESS INTELLIGENCE & HR ANALYTICS"
         Title = "Employee Retention Analysis"
         Sub = "Human Resources analytics platform investigating factors driving employee resignation rates"
@@ -113,6 +132,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "05"
+        Tag = "UNSUPERVISED ML"
         Cat = "UNSUPERVISED LEARNING & SEGMENTATION"
         Title = "K-Means Income Clustering"
         Sub = "Unsupervised learning app grouping customers into distinct demographic segments based on age and income"
@@ -124,6 +144,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "06"
+        Tag = "SUPERVISED ML"
         Cat = "SUPERVISED ML & REGRESSION VALUATION"
         Title = "House Price Prediction"
         Sub = "Predictive modeling application estimating real estate valuations based on square footage"
@@ -135,6 +156,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "07"
+        Tag = "SUPERVISED ML"
         Cat = "SUPERVISED ML & BINARY CLASSIFICATION"
         Title = "Insurance Logistic Regression"
         Sub = "Classification model predicting whether a customer will purchase insurance based on age"
@@ -146,6 +168,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "08"
+        Tag = "NLP & LLM"
         Cat = "RETRIEVAL-AUGMENTED GENERATION (RAG) & LLMS"
         Title = "Samsung Washing Machine Assistant"
         Sub = "AI-powered conversational assistant answering questions about user manuals"
@@ -157,6 +180,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "09"
+        Tag = "DEEP LEARNING"
         Cat = "DEEP LEARNING & FACIAL CLASSIFICATION"
         Title = "Male vs Female Classifier"
         Sub = "High-accuracy face classification app identifying gender from uploaded photos"
@@ -168,6 +192,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "10"
+        Tag = "UNSUPERVISED ML"
         Cat = "UNSUPERVISED LEARNING & SPECIES CATEGORIZATION"
         Title = "Iris Flower K-Means Clustering"
         Sub = "Classic ML clustering visualization analyzing the biological features of Iris flowers"
@@ -179,6 +204,7 @@ $projects = @(
     },
     [PSCustomObject]@{
         Num = "11"
+        Tag = "DEEP LEARNING"
         Cat = "DEEP LEARNING & CLINICAL DIAGNOSTICS"
         Title = "COVID-19 Chest X-Ray Detector"
         Sub = "Medical imaging diagnostic app scanning chest X-rays to detect potential COVID-19 infection"
@@ -199,17 +225,39 @@ foreach ($p in $projects) {
     $slide.Background.Fill.Solid()
     $slide.Background.Fill.ForeColor.RGB = $COLOR_BG_SLIDE
     
-    # 1. Project Header / Category indicator
-    $headBox = $slide.Shapes.AddTextbox(1, 40, 40, 300, 20)
+    # ── Left Decorative Accent Column Bar ──
+    $accentColor = if ([int]$p.Num % 2 -eq 0) { $COLOR_ORANGE } else { $COLOR_TEAL }
+    $leftBar = $slide.Shapes.AddShape(1, 0, 0, 6, 540)
+    $leftBar.Fill.Solid()
+    $leftBar.Fill.ForeColor.RGB = $accentColor
+    $leftBar.Line.Visible = 0
+
+    # ── Category Pill Capsule Badge ──
+    $badge = $slide.Shapes.AddShape(5, 40, 36, 130, 20) # msoShapeRoundedRectangle = 5
+    $badge.Fill.Solid()
+    $badge.Fill.ForeColor.RGB = $COLOR_CARD
+    $badge.Line.Visible = 1
+    $badge.Line.ForeColor.RGB = $accentColor
+    $badge.Line.Weight = 1
+    
+    $badgeRange = $badge.TextFrame.TextRange
+    $badgeRange.Text = $p.Tag
+    $badgeRange.Font.Name = "Segoe UI"
+    $badgeRange.Font.Size = 9
+    $badgeRange.Font.Bold = $true
+    $badgeRange.Font.Color.RGB = $COLOR_TEXT_MAIN
+    
+    # 1. Project Header / Index Indicator
+    $headBox = $slide.Shapes.AddTextbox(1, 185, 36, 170, 20)
     $headRange = $headBox.TextFrame.TextRange
-    $headRange.Text = "PROJECT $($p.Num) OF 11  •  $($p.Cat)"
+    $headRange.Text = "PROJECT $($p.Num) OF 11"
     $headRange.Font.Name = "Segoe UI"
-    $headRange.Font.Size = 10
+    $headRange.Font.Size = 9
     $headRange.Font.Bold = $true
     $headRange.Font.Color.RGB = $COLOR_TEXT_MUTED
     
     # 2. Slide Title
-    $titleBox = $slide.Shapes.AddTextbox(1, 40, 60, 300, 75)
+    $titleBox = $slide.Shapes.AddTextbox(1, 40, 62, 300, 75)
     $titleBox.TextFrame.WordWrap = $true
     $titleRange = $titleBox.TextFrame.TextRange
     $titleRange.Text = $p.Title
@@ -227,13 +275,13 @@ foreach ($p in $projects) {
     $subRange.Font.Size = 12
     $subRange.Font.Color.RGB = $COLOR_TEXT_MUTED
     
-    # Accent separator bar
-    $accent = $slide.Shapes.AddShape(1, 40, 195, 60, 3)
+    # Short separator line under subtitle
+    $accent = $slide.Shapes.AddShape(1, 40, 195, 60, 2)
     $accent.Fill.Solid()
-    $accent.Fill.ForeColor.RGB = $COLOR_TEAL
+    $accent.Fill.ForeColor.RGB = $accentColor
     $accent.Line.Visible = 0
     
-    # 4. Key Features Bullets
+    # 4. Key Features Bullets (Styled with simple hyphens to avoid encoding errors)
     $featLabelBox = $slide.Shapes.AddTextbox(1, 40, 205, 300, 20)
     $featLabelRange = $featLabelBox.TextFrame.TextRange
     $featLabelRange.Text = "KEY FEATURES"
@@ -245,24 +293,34 @@ foreach ($p in $projects) {
     $bulletBox = $slide.Shapes.AddTextbox(1, 40, 230, 300, 180)
     $bulletBox.TextFrame.WordWrap = $true
     $bulletRange = $bulletBox.TextFrame.TextRange
-    $bulletRange.Text = "• $($p.Bullet1)`n`n• $($p.Bullet2)`n`n• $($p.Bullet3)"
+    # Clean checkmark bullet style for modern tech feel
+    $bulletRange.Text = "- $($p.Bullet1)`n`n- $($p.Bullet2)`n`n- $($p.Bullet3)"
     $bulletRange.Font.Name = "Segoe UI"
     $bulletRange.Font.Size = 11
     $bulletRange.Font.Color.RGB = $COLOR_TEXT_MAIN
     
-    # 5. Tech Stack
-    $techBox = $slide.Shapes.AddTextbox(1, 40, 430, 300, 40)
-    $techBox.TextFrame.WordWrap = $true
-    $techRange = $techBox.TextFrame.TextRange
-    $techRange.Text = "TECH STACK:`n$($p.Tech)"
-    $techRange.Font.Name = "Segoe UI"
-    $techRange.Font.Size = 11
-    $techRange.Font.Bold = $true
-    $techRange.Font.Color.RGB = $COLOR_TEAL
+    # ── Tech Stack Capsule Card ──
+    $techCard = $slide.Shapes.AddShape(5, 40, 425, 300, 50)
+    $techCard.Fill.Solid()
+    $techCard.Fill.ForeColor.RGB = $COLOR_CARD
+    $techCard.Line.Visible = 1
+    $techCard.Line.ForeColor.RGB = $COLOR_TEAL
+    $techCard.Line.Weight = 1
     
-    # 6. Screenshot Card / Graphic Placement (Right Column)
-    # Lighter card container for elevation/depth
-    $card = $slide.Shapes.AddShape(1, 350, 90, 580, 340)
+    $techTextRange = $techCard.TextFrame.TextRange
+    $techTextRange.Text = "TECH STACK`n$($p.Tech)"
+    $techTextRange.Font.Name = "Segoe UI"
+    $techTextRange.Font.Size = 9
+    $techTextRange.Font.Bold = $true
+    $techTextRange.Font.Color.RGB = $COLOR_TEXT_MUTED
+    
+    # Style the "TECH STACK" text color specifically inside the box
+    $techTextRange.Paragraphs(1).Font.Color.RGB = $COLOR_TEAL
+    $techTextRange.Paragraphs(2).Font.Color.RGB = $COLOR_TEXT_MAIN
+    
+    # ── Screenshot Card Container with Elevation ──
+    # Added drop-shadow feel via Slate-800 card backing
+    $card = $slide.Shapes.AddShape(5, 350, 90, 580, 340)
     $card.Fill.Solid()
     $card.Fill.ForeColor.RGB = $COLOR_CARD
     $card.Line.Visible = 0
@@ -271,9 +329,6 @@ foreach ($p in $projects) {
     $imgPath = Join-Path $screenshotsDir $p.Img
     if (Test-Path $imgPath) {
         # Image dimension 16:9 centered inside the card area
-        # Center of card: X = 350 + 290 = 640. Y = 90 + 170 = 260.
-        # Image width: 550, height: 309.
-        # Image top = 260 - (309/2) = 105.5. Left = 640 - (550/2) = 365.
         $img = $slide.Shapes.AddPicture($imgPath, $false, $true, 365, 105, 550, 309)
         # Add a subtle border around the image
         $img.Line.Visible = 1
